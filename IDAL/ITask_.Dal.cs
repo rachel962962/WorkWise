@@ -10,5 +10,7 @@ namespace IDAL
         Task UpdateTaskAsync(Task_ task);
         Task<Task_> GetTaskByIdAsync(int id);
         Task DeleteTaskAsync(int id);
+        Task<List<Skill>> GetRequiredSkillsByTaskIdAsync(int taskId);
+        Task<List<Task_>> GetDependenciesByTaskIdAsync(int taskId);
     }
 }

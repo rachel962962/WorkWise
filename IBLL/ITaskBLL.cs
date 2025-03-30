@@ -9,6 +9,7 @@ namespace IBLL
         Task DeleteTaskAsync(int id);
         Task<List<TaskDTO>> GetAllTasksAsync();
         Task<TaskDTO> GetTaskByIdAsync(int id);
-        Task UpdateTaskAsync(TaskDTO task);
+        Task<List<SkillDTO>>  GetRequiredSkillsByTaskIdAsync(int taskId);
+        Task <List<TaskDTO>> GetDependenciesByTaskIdAsync(int taskId);
     }
 }

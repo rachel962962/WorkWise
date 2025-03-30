@@ -40,6 +40,18 @@ namespace BLL
             return mapper.Map<List<TaskDTO>>(list);
         }
 
+        public Task<List<TaskDTO>> GetDependenciesByTaskIdAsync(int taskId)
+        {
+            var list = taskDal.GetDependenciesByTaskIdAsync(taskId);
+            return mapper.Map<List<TaskDTO>>(list);
+        }
+
+        public async Task<List<SkillDTO>> GetRequiredSkillsByTaskIdAsync(int taskId)
+        {
+            var list =await taskDal.GetRequiredSkillsByTaskIdAsync(taskId);
+            return mapper.Map<List<SkillDTO>>(list);
+        }
+
         public async Task<TaskDTO> GetTaskByIdAsync(int id)
         {
             var task = await taskDal.GetTaskByIdAsync(id);

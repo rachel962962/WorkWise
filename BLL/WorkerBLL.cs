@@ -37,6 +37,30 @@ namespace BLL
             await workerDAL.DeleteWorkerAsync(id);
         }
 
+        public async Task<List<SkillDTO>> GetSkillsByWorkerIdAsync(int workerId)
+        {
+            var skills =  await workerDAL.GetSkillsByWorkerIdAsync(workerId);
+            return mapper.Map<List<SkillDTO>>(skills);
+        }
+
+        public async Task<List<WorkerAbsenceDTO>> GetWokerAbsenceByIdAsync(int workerId)
+        {
+            var list =await workerDAL.GetWokerAbsenceByIdAsync(workerId);
+            return mapper.Map<List<WorkerAbsenceDTO>>(list);
+        }
+
+        public async Task<List<WorkerAvailabilityDTO>> GetWokerAvailabilityByIdAsync(int workerId)
+        {
+            var list =await workerDAL.GetWokerAvailabilityByIdAsync(workerId);
+            return mapper.Map<List<WorkerAvailabilityDTO>>(list);
+        }
+
+        public async Task<List<ScheduleDTO>> GetWokerScheduleByIdAsync(int workerId)
+        {
+            var list =await workerDAL.GetWokerScheduleByIdAsync(workerId);
+            return mapper.Map<List<ScheduleDTO>>(list);
+        }
+
         public async Task<WorkerDTO> GetWorkerByIdAsync(int id)
         {
             var worker = await workerDAL.GetWorkerByIdAsync(id);

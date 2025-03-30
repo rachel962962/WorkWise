@@ -5,9 +5,11 @@ namespace DTO
 {
     public enum ProficiencyLevel
     {
-        מתחיל=1,
+        None,
+        מתחיל,
         בינוני,
         מומחה
+
     }
     public partial class WorkerSkillDTO
     {

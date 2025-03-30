@@ -46,6 +46,67 @@ namespace DAL
             }
         }
 
+        public async Task<List<Skill>> GetSkillsByWorkerIdAsync(int workerId)
+        {
+            await using var ctx = new WorkWiseDbContext();
+            try
+            {
+                return await ctx.WorkerSkills
+                    .Where(ws => ws.WorkerId == workerId)
+                    .Select(ws => ws.Skill)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting skills by worker id", ex);
+            }
+        }
+
+        public async Task<List<WorkerAbsence>> GetWokerAbsenceByIdAsync(int workerId)
+        {
+            await using var ctx = new WorkWiseDbContext();
+            try
+            {
+                return await ctx.WorkerAbsences
+                    .Where(wa => wa.WorkerId == workerId)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting worker absence by id", ex);
+            }
+        }
+
+        public async Task<List<WorkerAvailability>> GetWokerAvailabilityByIdAsync(int workerId)
+        {
+            await using var ctx = new WorkWiseDbContext();
+            try
+            {
+                return await ctx.WorkerAvailabilities
+                    .Where(wa => wa.WorkerId == workerId)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting worker availability by id", ex);
+            }
+        }
+
+        public async Task<List<Schedule>> GetWokerScheduleByIdAsync(int workerId)
+        {
+            await using var ctx = new WorkWiseDbContext();
+            try
+            {
+                return await ctx.Schedules
+                    .Where(s => s.WorkerId == workerId)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting worker schedule by id", ex);
+            }
+        }
+
         public async Task<Worker> GetWorkerByIdAsync(int id)
         {
             await using var ctx = new WorkWiseDbContext();

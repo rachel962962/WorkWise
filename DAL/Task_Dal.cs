@@ -58,6 +58,38 @@ namespace DAL
             }
         }
 
+        public async Task<List<Task_>> GetDependenciesByTaskIdAsync(int taskId)
+        {
+            await using var ctx = new WorkWiseDbContext();
+            try
+            {
+                return await ctx.TaskDependencies
+                    .Where(td => td.TaskId == taskId)
+                    .Select(td => td.DependentTask)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting dependencies by task id", ex);
+            }
+        }
+
+        public async Task<List<Skill>> GetRequiredSkillsByTaskIdAsync(int taskId)
+        {
+            await using var ctx = new WorkWiseDbContext();
+            try
+            {
+                return await ctx.TaskRequiredSkills
+                    .Where(ts => ts.TaskId == taskId)
+                    .Select(ts => ts.Skill)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting required skills by task id", ex);
+            }
+        }
+
         public async Task<Task_?> GetTaskByIdAsync(int id)
         {
             await using var ctx = new WorkWiseDbContext();

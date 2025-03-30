@@ -15,5 +15,9 @@ namespace IBLL
         Task UpdateWorkerAsync(WorkerDTO worker);
         Task<WorkerDTO> GetWorkerByIdAsync(int id);
         Task DeleteWorkerAsync(int id);
+        Task<List<SkillDTO>> GetSkillsByWorkerIdAsync(int workerId);
+        Task<List<WorkerAvailabilityDTO>> GetWokerAvailabilityByIdAsync(int workerId);
+        Task<List<ScheduleDTO>> GetWokerScheduleByIdAsync(int workerId);
+        Task <List<WorkerAbsenceDTO>> GetWokerAbsenceByIdAsync(int workerId);
     }
 }

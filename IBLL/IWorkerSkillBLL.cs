@@ -9,6 +9,6 @@ namespace IBLL
 {
     public interface IWorkerSkillBLL
     {
-
+        Task<ProficiencyLevel> GetProficiencyLevelBySkillAndWorkerId(int skillId , int workerId);
     }
 }
