@@ -27,6 +27,23 @@ namespace API.Controllers
             return Ok(tasks);
         }
 
+        [HttpGet("task-required-skills/{taskId}")]
+        public async Task<ActionResult<IEnumerable<SkillDTO>>> GetRequiredSkillsByTaskId(int taskId)
+        {
+            var task = await taskBLL.GetTaskByIdAsync(taskId);
+            if (task == null)
+            {
+                return NotFound($"Task with id {taskId} was not found.");
+            }
+            var skills = await taskBLL.GetRequiredSkillsByTaskIdAsync(taskId);
+            if (skills == null || skills.Count == 0)
+            {
+                return NotFound($"No required skills found for task with id {taskId}.");
+            }
+            return Ok(skills);
+        }
+
+
         // GET api/<TaskController>/5
         [HttpGet("{id}")]
         public async Task<ActionResult<TaskDTO>> Get(int id)
@@ -57,25 +74,25 @@ namespace API.Controllers
         }
 
         // PUT api/<TaskController>/5
-        [HttpPut("{id}")]
-        public async Task<ActionResult> Put(int id, [FromBody] TaskDTO taskDTO)
-        {
-            if (taskDTO == null)
-            {
-                return BadRequest("Task data is missing");
-            }
-            if (id != taskDTO.TaskId)
-            {
-                return BadRequest("Task id mismatch");
-            }
-            var task = await taskBLL.GetTaskByIdAsync(id);
-            if (task == null)
-            {
-                return NotFound($"Task with id {id} was not found.");
-            }
-            await taskBLL.UpdateTaskAsync(taskDTO);
-            return Ok(taskDTO);
-        }
+        //[HttpPut("{id}")]
+        //public async Task<ActionResult> Put(int id, [FromBody] TaskDTO taskDTO)
+        //{
+        //    if (taskDTO == null)
+        //    {
+        //        return BadRequest("Task data is missing");
+        //    }
+        //    if (id != taskDTO.TaskId)
+        //    {
+        //        return BadRequest("Task id mismatch");
+        //    }
+        //    var task = await taskBLL.GetTaskByIdAsync(id);
+        //    if (task == null)
+        //    {
+        //        return NotFound($"Task with id {id} was not found.");
+        //    }
+        //    await taskBLL.UpdateTaskAsync(taskDTO);
+        //    return Ok(taskDTO);
+        //}
 
         // DELETE api/<TaskController>/5
         [HttpDelete("{id}")]

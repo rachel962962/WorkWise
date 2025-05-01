@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace DBentities.Models;
 
@@ -20,6 +22,5 @@ public partial class Task_
     public virtual ICollection<TaskDependency> TaskDependenciesAsParent { get; set; } = new List<TaskDependency>();
     public virtual ICollection<TaskDependency> TaskDependenciesAsDependent { get; set; } = new List<TaskDependency>();
 
-    // For task required skills
     public virtual ICollection<TaskRequiredSkill> TaskRequiredSkills { get; set; } = new List<TaskRequiredSkill>();
 }

@@ -19,6 +19,8 @@ namespace BLL
             var configTaskConverter = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<Task_, TaskDTO>().ReverseMap();
+                cfg.CreateMap<Skill, SkillDTO>().ReverseMap();
+                cfg.CreateMap<TaskRequiredSkill, TaskRequiredSkillDTO>().ReverseMap(); // Fixed syntax error
             });
             mapper = new Mapper(configTaskConverter);
         }
@@ -40,15 +42,15 @@ namespace BLL
             return mapper.Map<List<TaskDTO>>(list);
         }
 
-        public Task<List<TaskDTO>> GetDependenciesByTaskIdAsync(int taskId)
+        public async Task<List<TaskDTO>> GetDependenciesByTaskIdAsync(int taskId)
         {
-            var list = taskDal.GetDependenciesByTaskIdAsync(taskId);
+            var list = await taskDal.GetDependenciesByTaskIdAsync(taskId);
             return mapper.Map<List<TaskDTO>>(list);
         }
 
         public async Task<List<SkillDTO>> GetRequiredSkillsByTaskIdAsync(int taskId)
         {
-            var list =await taskDal.GetRequiredSkillsByTaskIdAsync(taskId);
+            var list = await taskDal.GetRequiredSkillsByTaskIdAsync(taskId);
             return mapper.Map<List<SkillDTO>>(list);
         }
 

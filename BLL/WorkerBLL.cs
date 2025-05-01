@@ -22,6 +22,10 @@ namespace BLL
             var configTaskConverter = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<Worker, WorkerDTO>().ReverseMap();
+                cfg.CreateMap<Skill, SkillDTO>().ReverseMap();
+                cfg.CreateMap<WorkerAvailability, WorkerAvailabilityDTO>().ReverseMap();
+                cfg.CreateMap<WorkerAbsence, WorkerAbsenceDTO>().ReverseMap();
+
             });
 
             mapper = new Mapper(configTaskConverter);

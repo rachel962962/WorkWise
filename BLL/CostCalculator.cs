@@ -15,6 +15,7 @@ namespace BLL
         private static ITaskBLL ITaskBLL;
         private static IWorkerBLL IWorkerBLL;
         private static IWorkerSkillBLL IWorkerSkillBLL;
+        private static double[,] workersIds;
 
         public static void Initialize(ITaskBLL taskBLL, IWorkerBLL workerBLL, IWorkerSkillBLL workerSkillBLL)
         {
@@ -26,7 +27,7 @@ namespace BLL
         /// <summary>
         /// Calculates the cost matrix for task-worker assignments
         /// </summary>
-        public static async Task<double[,]> CalculateCostMatrixAsync(List<WorkerDTO> workers, List<TaskDTO> tasks, DateTime end)
+        public static async Task<(double[,], double[,], double[,])> CalculateCostMatrixAsync(List<WorkerDTO> workers, List<TaskDTO> tasks, DateTime end)
         {
             if (workers.Count == 0)
             {
@@ -40,6 +41,8 @@ namespace BLL
             {
                 throw new ArgumentException("End date is over");
             }
+            double[,] tasksIds = new double[tasks.Count, 2];
+            workersIds = new double[workers.Count, 2];
             double[,,] tempCostMatrix = new double[tasks.Count, workers.Count, 6];
             for (int t = 0; t < tasks.Count; t++)
             {
@@ -50,7 +53,7 @@ namespace BLL
                     tempCostMatrix[t, w, 2] = await CalculateDependencies(tasks[t]);
                     tempCostMatrix[t, w, 3] = await CalculatePriority(tasks[t]);
                     tempCostMatrix[t, w, 4] = await CalculateExperience(tasks[t], workers[w]);
-                    tempCostMatrix[t, w, 5] = await CalculateAvailability(tasks[t], workers[w], end);
+                    tempCostMatrix[t, w, 5] = await CalculateAvailability(tasks[t], workers[w], end, w);
                 }
             }
 
@@ -60,17 +63,20 @@ namespace BLL
             // Calculate normalization factors
             var normalizationFactors = await CalculateNormalizationFactorsAsync(tempCostMatrix);
             tempCostMatrix = Normalize(tempCostMatrix, normalizationFactors);
-            Factors factors = CalculateFactors(tempCostMatrix);
+            Factors factors = CalculateFactors(tempCostMatrix); 
+            
             // Calculate cost for each task-worker pair
             for (int t = 0; t < tasks.Count; t++)
             {
                 for (int w = 0; w < workers.Count; w++)
                 {
                     costMatrix[t, w] = await CalculateCostForTaskWorkerPairAsync(ExtractSlice(tempCostMatrix, t, w), factors);
+                    tasksIds[t,0] = tasks[t].TaskId;
+                    tasksIds[t, 1] = (double)tasks[t].Duration;
+                    workersIds[w,0] = workers[w].WorkerId;
                 }
             }
-
-            return costMatrix;
+            return (costMatrix, tasksIds, workersIds);
         }
         //חישוב דד-ליין לפני נרמול
         private static async Task<double> CalculateDeadLine(TaskDTO task)
@@ -150,7 +156,7 @@ namespace BLL
             return sum / requiredSkillIds.Count();
         }
         //חישוב זמינות
-        private static async Task<double> CalculateAvailability(TaskDTO task, WorkerDTO worker, DateTime end)
+        private static async Task<double> CalculateAvailability(TaskDTO task, WorkerDTO worker, DateTime end, int w)
         {
             DateTime start = DateTime.Now;
             decimal hours = 0;
@@ -173,8 +179,9 @@ namespace BLL
                     }
                 }
                 start = start.AddDays(1);
-            }
-            if ((task.Duration / hours) >= 1)
+            }   
+            workersIds[w,1] = (int)hours;
+            if (hours == 0 || task.Duration == 0 || (task.Duration / hours) >= 1 )
             {
                 return 1;
             }
@@ -220,7 +227,7 @@ namespace BLL
                     sum += mat[i, j, 1];
                 }
             }
-            return 1-(sum/dim1*dim2);
+            return 1-(sum/(dim1*dim2));
         }
         public static double CalculateDependenciesWeight(double[,,] mat)
         {
@@ -392,11 +399,10 @@ namespace BLL
         }
         private static async Task<NormalizationFactors> CalculateNormalizationFactorsAsync(double[,,] mat)
         {
-            // Get max dependencies across all tasks
-            double maxDeadline = GetMax(mat, 0).Result;
-            double maxDependencies = GetMax(mat, 2).Result;
-            double maxPriority = GetMax(mat, 3).Result;
-            double minDeadline = GetMin(mat, 0).Result;
+            double maxDeadline = await GetMax(mat, 0);
+            double maxDependencies = await GetMax(mat, 2);
+            double maxPriority = await GetMax(mat, 3);
+            double minDeadline = await GetMin(mat, 0);
             return new NormalizationFactors
             {
                 MinDeadline = (int)minDeadline,

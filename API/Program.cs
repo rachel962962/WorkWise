@@ -26,6 +26,10 @@ namespace API
             builder.Services.AddScoped<ISkillDAL, SkillDAL>();
             builder.Services.AddScoped<IWorkerBLL, WorkerBLL>();
             builder.Services.AddScoped<IWorkerDAL, WorkerDAL>();
+            builder.Services.AddScoped<IScheduleBLL, ScheduleBLL>();
+            builder.Services.AddScoped<IScheduleDAL, ScheduleDAL>();
+            builder.Services.AddScoped<IWorkerSkillBLL, WorkerSkillBLL>();
+            builder.Services.AddScoped<IWorkerSkillDAL, WorkerSkillDAL>();
 
             var app = builder.Build();
 

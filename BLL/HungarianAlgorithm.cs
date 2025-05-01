@@ -14,7 +14,7 @@ namespace BLL
         /// <param name="costs">A cost matrix; the element at row <em>i</em> and column <em>j</em> represents the cost of agent <em>i</em> performing task <em>j</em>.</param>
         /// <returns>A matrix of assignments; the value of element <em>i</em> is the column of the task assigned to agent <em>i</em>.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="costs"/> is null.</exception>
-        public static int[] FindAssignments(this int[,] costs)
+        public static int[] FindAssignments(this double[,] costs)
         {
             if (costs == null)
                 throw new ArgumentNullException(nameof(costs));
@@ -30,7 +30,7 @@ namespace BLL
                 // This simplifies the algorithm implementation
                 var row = w;
                 var col = h;
-                var transposeCosts = new int[row, col];
+                var transposeCosts = new double[row, col];
                 for (var i = 0; i < row; i++)
                 {
                     for (var j = 0; j < col; j++)
@@ -47,7 +47,7 @@ namespace BLL
             // This creates at least one zero in each row, which is necessary for finding valid assignments
             for (var i = 0; i < h; i++)
             {
-                var min = int.MaxValue;
+                var min = double.MaxValue;
 
                 for (var j = 0; j < w; j++)
                 {
@@ -72,7 +72,7 @@ namespace BLL
             {
                 for (var j = 0; j < w; j++)
                 {
-                    if (costs[i, j] == 0 && !rowsCovered[i] && !colsCovered[j])
+                    if (Math.Abs(costs[i, j]) < double.Epsilon && !rowsCovered[i] && !colsCovered[j])
                     {
                         masks[i, j] = 1; // Star this zero
                         rowsCovered[i] = true; // Cover this row
@@ -186,7 +186,7 @@ namespace BLL
         /// If there's no starred zero in the row, proceed to augment the path starting from this zero.
         /// </summary>
         /// <returns>3 if we found a primed zero with no starred zero in its row, 4 if no uncovered zeros remain</returns>
-        private static int FindAndPrimeUncoveredZero(int[,] costs, byte[,] masks, bool[] rowsCovered, bool[] colsCovered, int w, int h, ref (int row, int column) pathStart)
+        private static int FindAndPrimeUncoveredZero(double[,] costs, byte[,] masks, bool[] rowsCovered, bool[] colsCovered, int w, int h, ref (int row, int column) pathStart)
         {
             if (costs == null)
                 throw new ArgumentNullException(nameof(costs));
@@ -284,7 +284,7 @@ namespace BLL
         /// This creates at least one new uncovered zero without disturbing the existing starred zeros.
         /// </summary>
         /// <returns>2 to return to step 2 after creating new zeros</returns>
-        private static int CreateNewZerosByCostAdjustment(int[,] costs, bool[] rowsCovered, bool[] colsCovered, int w, int h)
+        private static int CreateNewZerosByCostAdjustment(double[,] costs, bool[] rowsCovered, bool[] colsCovered, int w, int h)
         {
             if (costs == null)
                 throw new ArgumentNullException(nameof(costs));
@@ -320,7 +320,7 @@ namespace BLL
         /// <summary>
         /// Finds the minimum value in the uncovered cells of the cost matrix.
         /// </summary>
-        private static int FindMinimumUncoveredValue(int[,] costs, bool[] rowsCovered, bool[] colsCovered, int w, int h)
+        private static double FindMinimumUncoveredValue(double[,] costs, bool[] rowsCovered, bool[] colsCovered, int w, int h)
         {
             if (costs == null)
                 throw new ArgumentNullException(nameof(costs));
@@ -331,7 +331,7 @@ namespace BLL
             if (colsCovered == null)
                 throw new ArgumentNullException(nameof(colsCovered));
 
-            var minValue = int.MaxValue;
+            var minValue = double.MaxValue;
 
             // Search through all uncovered cells to find the minimum value
             for (var i = 0; i < h; i++)
@@ -406,7 +406,7 @@ namespace BLL
         /// Finds an uncovered zero in the cost matrix.
         /// </summary>
         /// <returns>The row and column of the uncovered zero, or (-1, -1) if none exists.</returns>
-        private static (int row, int column) FindUncoveredZero(int[,] costs, bool[] rowsCovered, bool[] colsCovered, int w, int h)
+        private static (int row, int column) FindUncoveredZero(double[,] costs, bool[] rowsCovered, bool[] colsCovered, int w, int h)
         {
             if (costs == null)
                 throw new ArgumentNullException(nameof(costs));
@@ -423,7 +423,7 @@ namespace BLL
 
                 for (var j = 0; j < w; j++)
                 {
-                    if (costs[i, j] == 0 && !colsCovered[j])
+                    if (Math.Abs(costs[i, j]) < double.Epsilon && !colsCovered[j])
                         return (i, j);
                 }
             }
