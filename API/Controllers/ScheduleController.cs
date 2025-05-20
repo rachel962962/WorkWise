@@ -42,5 +42,20 @@ namespace API.Controllers
         public void Delete(int id)
         {
         }
+
+        [HttpGet("get-schedule-by-date/{date}")]
+        public async Task<ActionResult<IEnumerable<ScheduleDTO>>> GetScheduleByDate(DateTime date)
+        {
+            if (date == null)
+            {
+                return BadRequest("Date cannot be null.");
+            }
+            var schedule = await scheduleBLL.GetScheduleByDateAsync(date);
+            if (schedule == null)
+            {
+                return NotFound($"Schedule for {date} was not found.");
+            }
+            return Ok(schedule);
+        }
     }
 }

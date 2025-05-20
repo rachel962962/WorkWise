@@ -19,6 +19,9 @@ namespace BLL
             var workersIds = costMatrixTask.Result.Item3;
             double[,] expandedCostMatrix = ExpandMatrix.ExpandCostMatrix(costMatrix, tasksIds, workersIds); 
             var result = HungarianAlgorithm.FindAssignments(expandedCostMatrix);
+             string fileName = "matrix_output.txt";
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName);
+            AssignmentWriter.WriteAssignments(path, result, tasksIds, workersIds);
             List<ScheduleDTO> scheduleList = new List<ScheduleDTO>();
             return scheduleList;
         }

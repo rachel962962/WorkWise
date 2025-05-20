@@ -27,7 +27,10 @@ namespace BLL
             this.workerSkillBLL = workerSkillBLL;
             var configTaskConverter = new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<Schedule, ScheduleDTO>().ReverseMap();
+                cfg.CreateMap<Schedule, ScheduleDTO>()
+                .ForMember(dest => dest.WorkerId, opt => opt.MapFrom(src => src.Worker.WorkerId))
+                .ForMember(dest => dest.TaskId, opt => opt.MapFrom(src => src.Task.TaskId))
+                .ReverseMap();
             });
             mapper = new Mapper(configTaskConverter);
             this.taskBLL = taskBLL;
@@ -41,6 +44,12 @@ namespace BLL
             return Task.FromResult(result);
 
 
+        }
+
+        public async Task<List<ScheduleDTO?>> GetScheduleByDateAsync(DateTime date)
+        {
+            List<Schedule> schedules = await scheduleDAL.GetScheduleByDateAsync(date);
+            return schedules.Select(s => mapper.Map<ScheduleDTO?>(s)).ToList();
         }
     }
 }

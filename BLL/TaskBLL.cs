@@ -20,7 +20,7 @@ namespace BLL
             {
                 cfg.CreateMap<Task_, TaskDTO>().ReverseMap();
                 cfg.CreateMap<Skill, SkillDTO>().ReverseMap();
-                cfg.CreateMap<TaskRequiredSkill, TaskRequiredSkillDTO>().ReverseMap(); // Fixed syntax error
+                cfg.CreateMap<TaskRequiredSkill, TaskRequiredSkillDTO>().ReverseMap(); 
             });
             mapper = new Mapper(configTaskConverter);
         }
@@ -36,9 +36,39 @@ namespace BLL
             await taskDal.DeleteTaskAsync(id);
         }
 
+        public async Task<List<TaskDTO>> GetAllAssignedTasksAsync()
+        {
+            var list = await taskDal.GetAllAssignedTasksAsync();
+            return mapper.Map<List<TaskDTO>>(list);
+        }
+
+        public async Task<List<TaskDTO>> GetAllCancelledTasksAsync()
+        {
+            var list = await taskDal.GetAllCancelledTasksAsync();
+            return mapper.Map<List<TaskDTO>>(list);
+        }
+
+        public async Task<List<TaskDTO>> GetAllCompletedTasksAsync()
+        {
+            var list = await taskDal.GetAllCompletedTasksAsync();
+            return mapper.Map<List<TaskDTO>>(list);
+        }
+
+        public async Task<List<TaskDTO>> GetAllInProgressTasksAsync()
+        {
+            var list = await taskDal.GetAllInProgressTasksAsync();
+            return mapper.Map<List<TaskDTO>>(list);
+        }
+
         public async Task<List<TaskDTO>> GetAllTasksAsync()
         {
             var list = await taskDal.GetAllTasksAsync();
+            return mapper.Map<List<TaskDTO>>(list);
+        }
+
+        public async Task<List<TaskDTO>> GetAllUnassignedTasksAsync()
+        {
+            var list = await taskDal.GetAllUnassignedTasksAsync();
             return mapper.Map<List<TaskDTO>>(list);
         }
 

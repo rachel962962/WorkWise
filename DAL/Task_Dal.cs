@@ -45,6 +45,70 @@ namespace DAL
             }
         }
 
+        public async Task<List<Task_>> GetAllAssignedTasksAsync()
+        {
+            await using var ctx = new WorkWiseDbContext();
+            try
+            {
+                return await ctx.Tasks
+                    .Where(t => ctx.Schedules
+                        .Any(s => s.TaskId == t.TaskId && s.Status == "הוקצה"))
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting all in-progress tasks", ex);
+            }
+        }
+
+        public async Task<List<Task_>> GetAllCancelledTasksAsync()
+        {
+            await using var ctx = new WorkWiseDbContext();
+            try
+            {
+                return await ctx.Tasks
+                    .Where(t => ctx.Schedules
+                        .Any(s => s.TaskId == t.TaskId && s.Status == "בוטל"))
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting all in-progress tasks", ex);
+            }
+        }
+
+        public async Task<List<Task_>> GetAllCompletedTasksAsync()
+        {
+            await using var ctx = new WorkWiseDbContext();
+            try
+            {
+                return await ctx.Tasks
+                    .Where(t => ctx.Schedules
+                        .Any(s => s.TaskId == t.TaskId && s.Status == "הושלם"))
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting all in-progress tasks", ex);
+            }
+        }
+
+        public async Task<List<Task_>> GetAllInProgressTasksAsync()
+        {
+            await using var ctx = new WorkWiseDbContext();
+            try
+            {
+                return await ctx.Tasks
+                    .Where(t => ctx.Schedules
+                        .Any(s => s.TaskId == t.TaskId && s.Status == "בתהליך"))
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting all in-progress tasks", ex);
+            }
+        }
+
         public async Task<List<Task_>> GetAllTasksAsync()
         {
             await using var ctx = new WorkWiseDbContext();
@@ -55,6 +119,22 @@ namespace DAL
             catch (Exception ex)
             {
                 throw new Exception("Error getting all tasks", ex);
+            }
+        }
+
+        public async Task<List<Task_>> GetAllUnassignedTasksAsync()
+        {
+            await using var ctx = new WorkWiseDbContext();
+            try
+            {
+                return await ctx.Tasks
+                    .Where(t => !ctx.Schedules
+                        .Any(s => s.TaskId == t.TaskId))
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting all unassigned tasks", ex);
             }
         }
 

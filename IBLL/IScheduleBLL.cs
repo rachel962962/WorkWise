@@ -10,6 +10,7 @@ namespace IBLL
     public interface IScheduleBLL
     {
         Task<List<ScheduleDTO>> CreateNewSchedule(List<WorkerDTO> workers, List<TaskDTO> tasks, DateTime end);
+        Task<List<ScheduleDTO?> > GetScheduleByDateAsync(DateTime date);
 
     }
 }

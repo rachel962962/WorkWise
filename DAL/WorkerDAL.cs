@@ -125,13 +125,17 @@ namespace DAL
             await using var ctx = new WorkWiseDbContext();
             try
             {
-                return await ctx.Workers.ToListAsync();
+                return await ctx.Workers
+                    .Include(w => w.WorkerSkills)
+                        .ThenInclude(ws => ws.Skill)
+                    .ToListAsync();
             }
             catch (Exception ex)
             {
                 throw new Exception("Error getting all workers", ex);
             }
         }
+
 
         public async Task UpdateWorkerAsync(Worker worker)
         {

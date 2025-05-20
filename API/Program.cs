@@ -1,8 +1,12 @@
 using System.Reflection;
-using BLL;  // Import your business logic layer
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using BLL;  
 using DAL;
-using IBLL; // Import interfaces
-using IDAL; // Import interfaces
+using IBLL; 
+using IDAL;
+using BLL.Auth;
 
 namespace API
 {
@@ -12,12 +16,10 @@ namespace API
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            // ? Register BLL and DAL dependencies
             builder.Services.AddScoped<ITaskBLL, TaskBLL>();
             builder.Services.AddScoped<ITask_Dal, Task_Dal>();
             builder.Services.AddScoped<ITeamBLL, TeamBLL>();
@@ -30,10 +32,37 @@ namespace API
             builder.Services.AddScoped<IScheduleDAL, ScheduleDAL>();
             builder.Services.AddScoped<IWorkerSkillBLL, WorkerSkillBLL>();
             builder.Services.AddScoped<IWorkerSkillDAL, WorkerSkillDAL>();
-
+            builder.Services.AddScoped<IUserBLL, UserBLL>();
+            builder.Services.AddScoped<IUserDAL, UserDAL>();
+            builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.WithOrigins("http://localhost:3000")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+            builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        var config = builder.Configuration;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = config["JwtSettings:Issuer"],
+            ValidateAudience = true,
+            ValidAudience = config["JwtSettings:Audience"],
+            ValidateLifetime = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(config["JwtSettings:SecretKey"])
+            ),
+            ValidateIssuerSigningKey = true
+        };
+    });
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -41,6 +70,7 @@ namespace API
             }
 
             app.UseHttpsRedirection();
+            app.UseCors("AllowFrontend");
             app.UseAuthorization();
             app.MapControllers();
             app.Run();

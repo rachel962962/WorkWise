@@ -51,7 +51,7 @@ namespace API.Controllers
             {
                 return BadRequest("Worker data is missing");
             }
-            var team = await teamBLL.GetTeamByIdAsync(worker.TeamId); // Use the injected ITeamBLL
+            var team = await teamBLL.GetTeamByIdAsync(worker.TeamId); 
             if (team == null)
             {
                 return NotFound($"Team {worker.TeamId} was not found.");

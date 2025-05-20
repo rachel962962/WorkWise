@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using DBentities.Models;
 
 namespace DTO
 {
@@ -16,6 +17,9 @@ namespace DTO
         public decimal DailyHours { get; set; }
 
         public decimal? MaxWeeklyHours { get; set; }
+        public List<SkillDTO> Skills { get; set; } = new();
+        List<ScheduleDTO> Schedules { get; set; } = new();
+
 
     }
 }

@@ -27,7 +27,41 @@ namespace API.Controllers
             return Ok(tasks);
         }
 
-        [HttpGet("task-required-skills/{taskId}")]
+        [HttpGet("Assigned")]
+        public async Task<ActionResult<IEnumerable<TaskDTO>>> GetAssignedTasks()
+        {
+            var tasks = await taskBLL.GetAllAssignedTasksAsync();
+            return Ok(tasks);
+        }
+        [HttpGet("Unassigned")]
+        public async Task<ActionResult<IEnumerable<TaskDTO>>> GetUnassignedTasks()
+        {
+            var tasks = await taskBLL.GetAllUnassignedTasksAsync();
+            return Ok(tasks);
+        }
+
+        [HttpGet("Completed")]
+        public async Task<ActionResult<IEnumerable<TaskDTO>>> GetCompletedTasks()
+        {
+            var tasks = await taskBLL.GetAllCompletedTasksAsync();
+            return Ok(tasks);
+        }
+
+        [HttpGet("InProgress")]
+        public async Task<ActionResult<IEnumerable<TaskDTO>>> GetInProgressTasks()
+        {
+            var tasks = await taskBLL.GetAllInProgressTasksAsync();
+            return Ok(tasks);
+        }
+
+        [HttpGet("Cancelled")]
+        public async Task<ActionResult<IEnumerable<TaskDTO>>> GetCancelledTasks()
+        {
+            var tasks = await taskBLL.GetAllCancelledTasksAsync();
+            return Ok(tasks);
+        }
+
+[HttpGet("task-required-skills/{taskId}")]
         public async Task<ActionResult<IEnumerable<SkillDTO>>> GetRequiredSkillsByTaskId(int taskId)
         {
             var task = await taskBLL.GetTaskByIdAsync(taskId);
@@ -43,6 +77,7 @@ namespace API.Controllers
             return Ok(skills);
         }
 
+        
 
         // GET api/<TaskController>/5
         [HttpGet("{id}")]

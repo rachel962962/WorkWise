@@ -28,5 +28,7 @@ namespace DTO
 
         public ComplexityLevel ComplexityLevel { get; set; }
 
+        List<ScheduleDTO> Schedules { get; set; } = new();
+
     }
 }

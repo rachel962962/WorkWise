@@ -17,6 +17,11 @@ public partial class Worker
 
     public decimal? MaxWeeklyHours { get; set; }
 
+    public int? UserId { get; set; }
+
+    public virtual User? User { get; set; }
+
+
     public virtual ICollection<Schedule> Schedules { get; set; } = new List<Schedule>();
 
     public virtual Team? Team { get; set; }
