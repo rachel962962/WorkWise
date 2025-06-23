@@ -29,6 +29,8 @@ namespace DTO
         public ComplexityLevel ComplexityLevel { get; set; }
 
         List<ScheduleDTO> Schedules { get; set; } = new();
+        List<TaskRequiredSkillDTO> TaskRequiredSkills { get; set; } = new List<TaskRequiredSkillDTO>();
+
 
     }
 }

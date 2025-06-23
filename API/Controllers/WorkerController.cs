@@ -2,6 +2,7 @@
 using DAL;
 using DTO;
 using IBLL;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class WorkerController : ControllerBase
     {
         readonly IWorkerBLL workerBLL;
@@ -31,34 +33,57 @@ namespace API.Controllers
             return Ok(workers);
         }
 
-        // GET api/<WorkerController>/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult> Get(int id)
+        [HttpGet("workers-by-team/{teamId}")]
+        public async Task<ActionResult<IEnumerable<WorkerDTO>>> GetWorkersByTeam(int teamId)
         {
-            var worker = await workerBLL.GetWorkerByIdAsync(id);
-            if (worker == null)
-            {
-                return NotFound($"Worker with id {id} was not found.");
+            if (teamId == 0 ) {
+                return BadRequest("Team ID cannot be zero.");
             }
-            return Ok(worker);
-        }
-
-        // POST api/<WorkerController>
-        [HttpPost]
-        public async Task<ActionResult> Post([FromBody] WorkerDTO worker)
-        {
-            if (worker == null)
-            {
-                return BadRequest("Worker data is missing");
-            }
-            var team = await teamBLL.GetTeamByIdAsync(worker.TeamId); 
+            var team = await teamBLL.GetTeamByIdAsync(teamId);
             if (team == null)
             {
-                return NotFound($"Team {worker.TeamId} was not found.");
+                return NotFound($"Team with id {teamId} was not found.");
             }
-            await workerBLL.AddNewWorkerAsync(worker);
-            return CreatedAtAction(nameof(Get), new { id = worker.WorkerId }, worker);
+            var workers = await workerBLL.GetWorkersByTeamIdAsync(teamId);
+            return Ok(workers);
         }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<WorkerResponseDto>> GetWorker(int id)
+        {
+            try
+            {
+                var worker = await workerBLL.GetWorkerByIdAsync(id);
+                return Ok(worker);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<WorkerResponseDto>> CreateWorker([FromBody] WorkerCreationDto workerDto)
+        {
+            try
+            {
+                var result = await workerBLL.CreateWorkerAsync(workerDto);
+                return CreatedAtAction(nameof(GetWorker), new { id = result.WorkerId }, result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
 
         // PUT api/<WorkerController>/5
         [HttpPut("{id}")]

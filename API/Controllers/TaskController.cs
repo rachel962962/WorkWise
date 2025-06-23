@@ -3,11 +3,13 @@ using DTO;
 using IBLL;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class TaskController : ControllerBase
     {
         readonly ITaskBLL taskBLL;
@@ -77,18 +79,42 @@ namespace API.Controllers
             return Ok(skills);
         }
 
-        
+       
 
-        // GET api/<TaskController>/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<TaskDTO>> Get(int id)
+        public async Task<ActionResult<TaskResponseDto>> GetTask(int id)
         {
-            var task = await taskBLL.GetTaskByIdAsync(id);
-            if (task == null)
+            try
             {
-                return NotFound($"Task with id {id} was not found.");
+                var task = await taskBLL.GetTaskByIdAsync(id);
+                return Ok(task);
             }
-            return Ok(task);
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpPost("create-task")]
+        public async Task<ActionResult<TaskResponseDto>> CreateTask([FromBody] TaskCreationDto taskDto)
+        {
+            try
+            {
+                var result = await taskBLL.CreateTaskAsync(taskDto);
+                return CreatedAtAction(nameof(GetTask), new { id = result.TaskId }, result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
         // POST api/<TaskController>
@@ -107,27 +133,6 @@ namespace API.Controllers
             await taskBLL.AddNewTaskAsync(taskDTO);
             return CreatedAtAction(nameof(Get), new { id = taskDTO.TaskId }, taskDTO);
         }
-
-        // PUT api/<TaskController>/5
-        //[HttpPut("{id}")]
-        //public async Task<ActionResult> Put(int id, [FromBody] TaskDTO taskDTO)
-        //{
-        //    if (taskDTO == null)
-        //    {
-        //        return BadRequest("Task data is missing");
-        //    }
-        //    if (id != taskDTO.TaskId)
-        //    {
-        //        return BadRequest("Task id mismatch");
-        //    }
-        //    var task = await taskBLL.GetTaskByIdAsync(id);
-        //    if (task == null)
-        //    {
-        //        return NotFound($"Task with id {id} was not found.");
-        //    }
-        //    await taskBLL.UpdateTaskAsync(taskDTO);
-        //    return Ok(taskDTO);
-        //}
 
         // DELETE api/<TaskController>/5
         [HttpDelete("{id}")]

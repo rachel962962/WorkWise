@@ -29,9 +29,9 @@ namespace DTO
         public decimal AssignedHours { get; set; }
 
         public string? Status { get; set; }
-        public virtual Task_ Task { get; set; } = null!;
+        public virtual TaskDTO Task { get; set; } = null!;
 
-        public virtual Worker Worker { get; set; } = null!;
+        public virtual WorkerDTO Worker { get; set; } = null!;
 
     }
 }

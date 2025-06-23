@@ -11,11 +11,15 @@ namespace BLL
     public class TaskBLL : ITaskBLL
     {
         private readonly ITask_Dal taskDal;
+        private readonly ITeamDAL teamDal;
+        private readonly ISkillDAL skillDal;
         private readonly IMapper mapper;
 
-        public TaskBLL(ITask_Dal taskDal)
+        public TaskBLL(ITask_Dal taskDal, ITeamDAL teamDAL, ISkillDAL skillDAL)
         {
             this.taskDal = taskDal;
+            this.teamDal = teamDAL;
+            this.skillDal = skillDAL;
             var configTaskConverter = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<Task_, TaskDTO>().ReverseMap();
@@ -84,16 +88,128 @@ namespace BLL
             return mapper.Map<List<SkillDTO>>(list);
         }
 
-        public async Task<TaskDTO> GetTaskByIdAsync(int id)
-        {
-            var task = await taskDal.GetTaskByIdAsync(id);
-            return task != null ? mapper.Map<TaskDTO>(task) : null;
-        }
 
         public async Task UpdateTaskAsync(TaskDTO task)
         {
             Task_ task_ = mapper.Map<Task_>(task);
             await taskDal.UpdateTaskAsync(task_);
+        }
+
+        public async Task<TaskResponseDto> CreateTaskAsync(TaskCreationDto taskDto)
+        {
+            // Validate team exists if specified
+            if (taskDto.AssignedTeamId.HasValue)
+            {
+                var teamExists = await teamDal.TeamExistsAsync(taskDto.AssignedTeamId.Value);
+                if (!teamExists)
+                {
+                    throw new ArgumentException($"Team with ID {taskDto.AssignedTeamId.Value} does not exist");
+                }
+            }
+
+            // Validate skills exist
+            if (taskDto.RequiredSkillIds != null)
+            {
+                foreach (var skillId in taskDto.RequiredSkillIds)
+                {
+                    var skillExists = await skillDal.SkillExistsAsync(skillId);
+                    if (!skillExists)
+                    {
+                        throw new ArgumentException($"Skill with ID {skillId} does not exist");
+                    }
+                }
+            }
+
+            // Validate dependent tasks exist
+            if (taskDto.DependentTaskIds != null)
+            {
+                foreach (var dependentTaskId in taskDto.DependentTaskIds)
+                {
+                    var taskExists = await taskDal.TaskExistsAsync(dependentTaskId);
+                    if (!taskExists)
+                    {
+                        throw new ArgumentException($"Dependent task with ID {dependentTaskId} does not exist");
+                    }
+                }
+            }
+
+            // Create task
+            var task = new Task_
+            {
+                Name = taskDto.Name,
+                AssignedTeamId = taskDto.AssignedTeamId,
+                PriorityLevel = taskDto.PriorityLevel,
+                Deadline = taskDto.Deadline,
+                Duration = taskDto.Duration,
+                RequiredWorkers = taskDto.RequiredWorkers > 0 ? taskDto.RequiredWorkers : 1,
+                ComplexityLevel = taskDto.ComplexityLevel
+            };
+
+            // Create required skills
+            var requiredSkills = new List<TaskRequiredSkill>();
+            if (taskDto.RequiredSkillIds != null)
+            {
+                foreach (var skillId in taskDto.RequiredSkillIds)
+                {
+                    requiredSkills.Add(new TaskRequiredSkill
+                    {
+                        SkillId = skillId
+                    });
+                }
+            }
+
+            // Create dependencies
+            var dependencies = new List<TaskDependency>();
+            if (taskDto.DependentTaskIds != null)
+            {
+                foreach (var dependentTaskId in taskDto.DependentTaskIds)
+                {
+                    dependencies.Add(new TaskDependency
+                    {
+                        DependentTaskId = dependentTaskId
+                    });
+                }
+            }
+
+            // Save task with all related entities
+            var createdTask = await taskDal.CreateTaskAsync(task, requiredSkills, dependencies);
+
+            // Map to response DTO
+            return await GetTaskByIdAsync(createdTask.TaskId);
+        }
+
+        public async Task<TaskResponseDto> GetTaskByIdAsync(int taskId)
+        {
+            var task = await taskDal.GetTaskByIdAsync(taskId);
+            if (task == null)
+            {
+                throw new ArgumentException($"Task with ID {taskId} does not exist");
+            }
+
+            return new TaskResponseDto
+            {
+                TaskId = task.TaskId,
+                Name = task.Name,
+                AssignedTeamId = task.AssignedTeamId,
+                TeamName = task.AssignedTeam?.Name,
+                PriorityLevel = task.PriorityLevel,
+                Deadline = task.Deadline,
+                Duration = task.Duration,
+                RequiredWorkers = task.RequiredWorkers,
+                ComplexityLevel = task.ComplexityLevel,
+                RequiredSkills = task.TaskRequiredSkills?.Select(rs => new TaskRequiredSkillDTO
+                {
+                    SkillId = rs.SkillId,
+                    SkillName = rs.Skill.Name
+                }).ToList() ?? new List<TaskRequiredSkillDTO>(),
+                DependentTaskIds = task.TaskDependenciesAsDependent?.Select(d => d.DependentTaskId).ToList() ?? new List<int>()
+            };
+        }
+
+        public async Task<List<TaskDependencyDTO>> GetAllDependenciesByTasksIdsAsync(List<int> tasksIds)
+        {
+            var list = await taskDal.GetAllDependenciesByTasksIdsAsync(tasksIds);
+            return mapper.Map<List<TaskDependencyDTO>>(list);
         }
     }
 }

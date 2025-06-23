@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace DTO
 {
-    public class TaskRequiredSkillDTO
+    public class WorkerSkillDetailDto
     {
-        public int TaskId { get; set; }
         public int SkillId { get; set; }
         public string SkillName { get; set; }
+        public string ProficiencyLevel { get; set; }
     }
 }

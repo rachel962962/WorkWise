@@ -10,6 +10,7 @@ namespace IDAL
     public interface IScheduleDAL
     {
         Task<List<Schedule>> GetScheduleByDateAsync(DateTime date);
-      //  Task<List<Schedule>> CreateNewSchedule(List<WorkerDTO> workers, List<TaskDTO> tasks, DateTime end);
+        Task<List<Schedule>> GetScheduleByDateAndTeamAsync(DateTime date, int teamId);
+        Task<List<Schedule>> GetAllUncompletedScheduleAsync();
     }
 }

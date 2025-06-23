@@ -105,5 +105,25 @@ namespace DAL
 
             }
         }
+
+        public async Task<bool> SkillExistsAsync(int skillId)
+        {
+            using WorkWiseDbContext ctx = new WorkWiseDbContext();
+            return await ctx.Skills.AnyAsync(s => s.SkillId == skillId);
+        }
+
+        public async Task<List<Skill>> GetAllFullSkillsAsync()
+        {
+            using WorkWiseDbContext ctx = new WorkWiseDbContext();
+            try
+            {
+                return await ctx.Skills
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting all full skills", ex);
+            }
+        }
     }
 }

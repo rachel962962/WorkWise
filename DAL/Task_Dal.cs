@@ -130,6 +130,8 @@ namespace DAL
                 return await ctx.Tasks
                     .Where(t => !ctx.Schedules
                         .Any(s => s.TaskId == t.TaskId))
+                    .Include(t => t.TaskRequiredSkills)
+                .ThenInclude(trs => trs.Skill)
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -170,18 +172,18 @@ namespace DAL
             }
         }
 
-        public async Task<Task_?> GetTaskByIdAsync(int id)
-        {
-            await using var ctx = new WorkWiseDbContext();
-            try
-            {
-                return await ctx.Tasks.FirstOrDefaultAsync(t => t.TaskId == id);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error getting task by id", ex);
-            }
-        }
+        //public async Task<Task_?> GetTaskByIdAsync(int id)
+        //{
+        //    await using var ctx = new WorkWiseDbContext();
+        //    try
+        //    {
+        //        return await ctx.Tasks.FirstOrDefaultAsync(t => t.TaskId == id);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception("Error getting task by id", ex);
+        //    }
+        //}
 
         public async Task UpdateTaskAsync(Task_ task)
         {
@@ -207,6 +209,76 @@ namespace DAL
             else
             {
                 throw new Exception("Task not found");
+            }
+        }
+
+        public async Task<Task_> CreateTaskAsync(Task_ task, List<TaskRequiredSkill> requiredSkills, List<TaskDependency> dependencies)
+        {
+            await using var ctx = new WorkWiseDbContext();
+            using (var transaction = await ctx.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    // Add task
+                    await ctx.Tasks.AddAsync(task);
+                    await ctx.SaveChangesAsync();
+
+                    // Add required skills
+                    foreach (var skill in requiredSkills)
+                    {
+                        skill.TaskId = task.TaskId;
+                        await ctx.TaskRequiredSkills.AddAsync(skill);
+                    }
+
+                    // Add dependencies
+                    foreach (var dependency in dependencies)
+                    {
+                        dependency.TaskId = task.TaskId;
+                        await ctx.TaskDependencies.AddAsync(dependency);
+                    }
+
+                    await ctx.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return task;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
+        }
+
+        public async Task<Task_?> GetTaskByIdAsync(int taskId)
+        {
+            await using var ctx = new WorkWiseDbContext();
+            return await ctx.Tasks
+                .Include(t => t.AssignedTeam)
+                .Include(t => t.TaskRequiredSkills)
+                    .ThenInclude(rs => rs.Skill)
+                .Include(t => t.TaskDependenciesAsParent)
+                .FirstOrDefaultAsync(t => t.TaskId == taskId);
+        }
+
+        public async Task<bool> TaskExistsAsync(int taskId)
+        {
+            await using var ctx = new WorkWiseDbContext();
+            return await ctx.Tasks.AnyAsync(t => t.TaskId == taskId);
+        }
+
+        public async Task<List<TaskDependency>> GetAllDependenciesByTasksIdsAsync(List<int> tasksIds)
+        {
+            await using var ctx = new WorkWiseDbContext();
+            try
+            {
+                return await ctx.TaskDependencies
+                    .Where(td => tasksIds.Contains(td.DependentTaskId))
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting all dependencies by task ids", ex);
             }
         }
     }

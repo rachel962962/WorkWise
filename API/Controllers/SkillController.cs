@@ -4,11 +4,13 @@ using IBLL;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class SkillController : ControllerBase
     {
         readonly ISkillBLL skillBLL;
@@ -25,6 +27,14 @@ namespace API.Controllers
             var skills = await skillBLL.GetAllSkillsAsync();
             return Ok(skills);
         }
+
+        [HttpGet("fullSkills")]
+        public async Task<ActionResult<IEnumerable<SkillDTO>>> GetFullSkills()
+        {
+            var skills = await skillBLL.GetAllFullSkillsAsync();
+            return Ok(skills);
+        }
+
 
         // GET api/<SkillController>/5
         [HttpGet("{id}")]

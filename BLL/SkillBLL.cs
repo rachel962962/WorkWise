@@ -22,6 +22,7 @@ namespace BLL
             var configTaskConverter = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<Skill, SkillDTO>().ReverseMap();
+
             });
             mapper = new Mapper(configTaskConverter);
         }
@@ -58,6 +59,12 @@ namespace BLL
         {
             var skill = await skillDAL.GetSkillByNameAsync(name);
             return skill != null ? mapper.Map<SkillDTO>(skill) : null;
+        }
+
+        public async Task<List<SkillDTO>?> GetAllFullSkillsAsync()
+        {
+            var skills = await skillDAL.GetAllFullSkillsAsync();
+            return skills != null ? mapper.Map<List<SkillDTO>>(skills) : null;
         }
     }
 }

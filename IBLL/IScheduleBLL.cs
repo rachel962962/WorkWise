@@ -11,6 +11,8 @@ namespace IBLL
     {
         Task<List<ScheduleDTO>> CreateNewSchedule(List<WorkerDTO> workers, List<TaskDTO> tasks, DateTime end);
         Task<List<ScheduleDTO?> > GetScheduleByDateAsync(DateTime date);
+        Task<List<ScheduleDTO>> GetScheduleByDateAndTeamAsync(DateTime date, int teamId);
+        Task<List<ScheduleDTO>> GetAllUncompletedScheduleAsync();
 
     }
 }

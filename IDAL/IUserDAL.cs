@@ -10,5 +10,7 @@ namespace IDAL
     public interface IUserDAL
     {
         Task<User?> GetUserAsync(string username);
+        Task<User> CreateUserAsync(User user);
+        Task<bool> UsernameExistsAsync(string username);
     }
 }

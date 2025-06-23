@@ -35,6 +35,8 @@ namespace API
             builder.Services.AddScoped<IUserBLL, UserBLL>();
             builder.Services.AddScoped<IUserDAL, UserDAL>();
             builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+            builder.Services.AddScoped<IAlgorithmManager, AlgorithmManager>();
+            builder.Services.AddScoped<IFinalSchedule, FinalSchedule>();
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowFrontend", policy =>
@@ -58,7 +60,9 @@ namespace API
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(config["JwtSettings:SecretKey"])
             ),
-            ValidateIssuerSigningKey = true
+            ValidateIssuerSigningKey = true,
+            ClockSkew = TimeSpan.FromMinutes(5)
+
         };
     });
             var app = builder.Build();
@@ -71,6 +75,7 @@ namespace API
 
             app.UseHttpsRedirection();
             app.UseCors("AllowFrontend");
+            app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
             app.Run();

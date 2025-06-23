@@ -15,5 +15,6 @@ namespace IBLL
         Task<SkillDTO?> GetSkillByIdAsync(int id);
         Task UpdateSkillAsync(SkillDTO skill);
         Task<SkillDTO?> GetSkillByNameAsync(string name);
+        Task<List<SkillDTO>> GetAllFullSkillsAsync();
     }
 }

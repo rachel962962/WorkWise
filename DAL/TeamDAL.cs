@@ -93,6 +93,11 @@ namespace DAL
                 throw new Exception("Error updating team", ex);
             }
         }
+        public async Task<bool> TeamExistsAsync(int teamId)
+        {
+            await using var ctx = new WorkWiseDbContext();
+            return await ctx.Teams.AnyAsync(t => t.TeamId == teamId);
+        }
     }
 
 }

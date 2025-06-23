@@ -14,5 +14,7 @@ namespace IDAL
         Task UpdateTeamAsync(Team team);
         Task<Team> GetTeamByIdAsync(int id);
         Task DeleteTeamAsync(int id);
+        Task<bool> TeamExistsAsync(int teamId);
+
     }
 }

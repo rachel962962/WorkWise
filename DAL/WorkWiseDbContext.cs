@@ -206,17 +206,6 @@ namespace DAL
                 entity.Property(e => e.TaskId).HasColumnName("task_id");
                 entity.Property(e => e.SkillId).HasColumnName("skill_id");
 
-                //    // Configure the relationships
-                //    entity.HasOne<Task_>()
-                //        .WithMany(p => p.TaskRequiredSkills)
-                //        .HasForeignKey(d => d.TaskId)
-                //        .HasConstraintName("FK__TaskRequi__task___73BA3083");
-
-                //    entity.HasOne<Skill>()
-                //        .WithMany(p => p.TaskRequiredSkills)
-                //        .HasForeignKey(d => d.SkillId)
-                //        .HasConstraintName("FK__TaskRequi__skill__74AE54BC");
-                //
                 entity.HasOne(d => d.Task)  // Use the navigation property name
             .WithMany(p => p.TaskRequiredSkills)
             .HasForeignKey(d => d.TaskId)

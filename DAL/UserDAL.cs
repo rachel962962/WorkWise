@@ -27,5 +27,18 @@ namespace DAL
             }
 
         }
+
+        public async Task<User> CreateUserAsync(User user)
+        {
+            await using var ctx = new WorkWiseDbContext();
+            await ctx.Users.AddAsync(user);
+            await ctx.SaveChangesAsync();
+            return user;
+        }
+        public async Task<bool> UsernameExistsAsync(string username)
+        {
+            await using var ctx = new WorkWiseDbContext();
+            return await ctx.Users.AnyAsync(u => u.Username == username);
+        }
     }
 }

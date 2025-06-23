@@ -8,12 +8,6 @@ namespace BLL
 {
     public static class HungarianAlgorithm
     {
-        /// <summary>
-        /// Finds the optimal assignments for a given matrix of agents and costed tasks such that the total cost is minimized.
-        /// </summary>
-        /// <param name="costs">A cost matrix; the element at row <em>i</em> and column <em>j</em> represents the cost of agent <em>i</em> performing task <em>j</em>.</param>
-        /// <returns>A matrix of assignments; the value of element <em>i</em> is the column of the task assigned to agent <em>i</em>.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="costs"/> is null.</exception>
         public static int[] FindAssignments(this double[,] costs)
         {
             if (costs == null)
@@ -22,12 +16,12 @@ namespace BLL
             var h = costs.GetLength(0);
             var w = costs.GetLength(1);
 
-            // Handle the case where there are more rows than columns
+            // טיפול במקרה שבו יש יותר שורות מעמודות
             bool rowsGreaterThanCols = h > w;
             if (rowsGreaterThanCols)
             {
-                // Transpose the cost matrix to ensure we have more columns than rows
-                // This simplifies the algorithm implementation
+                // טרנספוזיציה של מטריצת העלויות כדי להבטיח שיש יותר עמודות משורות
+                // זה מפשט את מימוש האלגוריתם
                 var row = w;
                 var col = h;
                 var transposeCosts = new double[row, col];
@@ -43,8 +37,8 @@ namespace BLL
                 w = col;
             }
 
-            // Step 0: Reduce rows by subtracting the minimum value in each row from all elements in that row
-            // This creates at least one zero in each row, which is necessary for finding valid assignments
+            // שלב 0: הפחתת השורות על ידי חיסור הערך המינימלי בכל שורה מכל האיברים באותה שורה
+            // פעולה זו יוצרת לפחות אפס אחד בכל שורה, מה שנחוץ למציאת שיבוצים תקפים
             for (var i = 0; i < h; i++)
             {
                 var min = double.MaxValue;
@@ -60,36 +54,36 @@ namespace BLL
                 }
             }
 
-            // Initialize masks matrix:
-            // 0 = unmarked, 1 = starred zero (potential assignment), 2 = primed zero (candidate)
-            var masks = new byte[h, w];
+            // אתחול מטריצת מסיכות:
+            // 0 = לא מסומן, 1 = אפס מסומן בכוכב (שיבוץ פוטנציאלי), 2 = אפס מסומן ב"פריים" (מועמד)
+             var masks = new byte[h, w];
             var rowsCovered = new bool[h];
             var colsCovered = new bool[w];
 
-            // Initial star assignment: star as many zeros as possible
-            // We can only star a zero if its row and column don't already have a starred zero
+            // שיבוץ כוכביות ראשוני: סימון אפסים בכוכביות ככל האפשר
+            // אפשר לסמן אפס בכוכב רק אם השורה והעמודה שלו עדיין לא כוללות אפס מסומן
             for (var i = 0; i < h; i++)
             {
                 for (var j = 0; j < w; j++)
                 {
                     if (Math.Abs(costs[i, j]) < double.Epsilon && !rowsCovered[i] && !colsCovered[j])
                     {
-                        masks[i, j] = 1; // Star this zero
-                        rowsCovered[i] = true; // Cover this row
-                        colsCovered[j] = true; // Cover this column
+                        masks[i, j] = 1; 
+                        rowsCovered[i] = true; // כיסוי השורה
+                        colsCovered[j] = true; // כיסוי העמודה
                     }
                 }
             }
 
-            // Clear all covers to prepare for the main algorithm
+            // ניקוי כל הכיסויים כהכנה לאלגוריתם המרכזי
             ClearAllCovers(rowsCovered, colsCovered, w, h);
 
-            // Use a more memory-efficient structure for the augmenting path
-            // We'll reuse this array throughout the algorithm rather than reallocating
+            // שימוש במבנה זיכרון חסכוני יותר עבור נתיב ההרחבה
+            // נעשה שימוש חוזר במערך הזה במהלך האלגוריתם במקום להקצות מחדש
             var path = new (int row, int column)[w * h];
-            var pathStart = (-1, -1); // Using ValueTuple instead of custom struct
+            var pathStart = (-1, -1); // 
 
-            // Main algorithm state machine
+            // מכונת מצבים של האלגוריתם הראשי
             var step = 1;
             while (step != -1)
             {
