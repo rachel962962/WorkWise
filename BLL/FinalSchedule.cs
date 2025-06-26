@@ -265,7 +265,7 @@ namespace BLL
         /// <summary>
         /// חישוב זמן סיום תוך התחשבות בשעות עבודה
         /// </summary>
-        private   DateTime CalculateFinishTime(
+        public   DateTime CalculateFinishTime(
             DateTime startTime,
             decimal durationHours,
             int workerId,
@@ -302,7 +302,7 @@ namespace BLL
         /// <summary>
         /// התאמה לשעות עבודה וימי עבודה
         /// </summary>
-        private   DateTime AdjustToWorkingHours(
+        public DateTime AdjustToWorkingHours(
             DateTime proposedTime,
             int workerId,
             List<WorkerAbsenceDTO> workerAbsences,

@@ -63,7 +63,7 @@ namespace API.Controllers
             return Ok(tasks);
         }
 
-[HttpGet("task-required-skills/{taskId}")]
+        [HttpGet("task-required-skills/{taskId}")]
         public async Task<ActionResult<IEnumerable<SkillDTO>>> GetRequiredSkillsByTaskId(int taskId)
         {
             var task = await taskBLL.GetTaskByIdAsync(taskId);
@@ -79,7 +79,7 @@ namespace API.Controllers
             return Ok(skills);
         }
 
-       
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<TaskResponseDto>> GetTask(int id)
@@ -146,5 +146,6 @@ namespace API.Controllers
             await taskBLL.DeleteTaskAsync(id);
             return Ok($"Task with id {id} was deleted.");
         }
+
     }
 }

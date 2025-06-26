@@ -24,5 +24,6 @@ namespace IDAL
         Task<List<Worker>> GetWorkersByTeamIdAsync(int teamId);
         Task<List<WorkerAbsence>> GetAllWokerAbsenceAsync();
         Task<List<WorkerAvailability>> GetWokerAvailabilityAsync();
+        Task<int> GetWokerAbsenceCountByTeamAsync(int teamId);
     }
 }

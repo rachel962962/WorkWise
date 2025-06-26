@@ -24,6 +24,6 @@ namespace IBLL
         Task <List<WorkerAbsenceDTO>> GetAllWokerAbsenceAsync();
         Task<WorkerResponseDto?> GetWorkerByUserIdAsync(int userId);
         Task<List<WorkerDTO>> GetWorkersByTeamIdAsync(int teamId);
-
+        Task<int> GetWokerAbsenceCountByTeamAsync(int teamId);
     }
 }

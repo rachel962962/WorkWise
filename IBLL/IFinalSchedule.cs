@@ -20,5 +20,17 @@ namespace IBLL
             Dictionary<int, int> consolidatedAssignments,
             Dictionary<int, TaskMappingInfo> taskMappings,
             Dictionary<int, WorkerMappingInfo> workerMappings);
+        public DateTime AdjustToWorkingHours(
+        DateTime proposedTime,
+        int workerId,
+        List<WorkerAbsenceDTO> workerAbsences,
+        List<WorkerAvailabilityDTO> workerAvailabilities, List<ScheduleDTO> schedules);
+        public DateTime CalculateFinishTime(
+    DateTime startTime,
+    decimal durationHours,
+    int workerId,
+    List<WorkerAvailabilityDTO> workerAvailabilities,
+    List<WorkerAbsenceDTO> workerAbsences,
+    List<ScheduleDTO> schedules);
     }
 }

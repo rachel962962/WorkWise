@@ -41,29 +41,63 @@ namespace BLL
                 Console.WriteLine("Missing tasks: " + string.Join(", ", missingTasks));
             }
 
-            // Initialize cost calculator
+            // אתחול
             CostCalculator.Initialize(taskBLL, workerBLL, workerSkillBLL);
 
-            // Calculate cost matrix and get task and worker information
+            // חישוב מטריצת עלויות
             var result = await CostCalculator.CalculateCostMatrixAsync(workers, tasks, end);
             double[,] costMatrix = result.CostMatrix;
             Dictionary<int, TaskMappingInfo> keyValueTasksPairs = result.TaskMapping;
             Dictionary<int, WorkerMappingInfo> keyValueWorkersPairs = result.WorkerMapping;
 
-            // Expand cost matrix based on task durations and worker hours
+            // הרחבת המטריצה
             ExpandedMatrixResult expandedCostMatrix = ExpandMatrix.ExpandCostMatrix(costMatrix, keyValueTasksPairs, keyValueWorkersPairs);
 
-            // Run Hungarian algorithm to find optimal assignments
+            // הרצת האלגוריתם ההונגרי
             var algorithmResult = HungarianAlgorithm.FindAssignments(expandedCostMatrix.CostMatrix);
 
-            // Consolidate assignments - assign each task to the worker who got the most hours
+            // אופטימיזציה של ההקצאה
             var consolidatedAssignments = ConsolidateTaskAssignments(algorithmResult, expandedCostMatrix);
 
-            // Create schedule entries based on consolidated assignments
+            // לו"ז סופי
             List<ScheduleDTO> final_schedule = await finalSchedule.CreateFinalSchedule(consolidatedAssignments, keyValueTasksPairs, keyValueWorkersPairs, taskDependencies, existingSchedules);
 
             return final_schedule;
         }
+
+        public async Task<List<ScheduleDTO>> ManualAssignments(List<TaskAssignmentDto> assignments)
+        {
+            List<ScheduleDTO> manual_schedule = new List<ScheduleDTO>();
+            List<WorkerDTO> workers = await workerBLL.GetWorkersAsync();
+            List<TaskDTO> tasks = await taskBLL.GetAllTasksAsync();
+
+            foreach (var assignment in assignments)
+            {
+                WorkerDTO? worker = workers.FirstOrDefault(w => w.WorkerId == assignment.WorkerId);
+                TaskDTO? task = tasks.FirstOrDefault(t => t.TaskId == assignment.TaskId);
+                List<WorkerAbsenceDTO> workerAbsences = await workerBLL.GetWokerAbsenceByIdAsync(assignment.WorkerId);
+                List<WorkerAvailabilityDTO> workerAvailabilities = await workerBLL.GetWokerAvailabilityByIdAsync(assignment.WorkerId);
+                List<ScheduleDTO> existingSchedules = await workerBLL.GetWokerScheduleByIdAsync(assignment.WorkerId);
+
+                if (worker != null && task != null)
+                {
+                    DateTime startTime = finalSchedule.AdjustToWorkingHours(DateTime.Now, assignment.WorkerId, workerAbsences, workerAvailabilities, existingSchedules);
+                    var scheduleEntry = new ScheduleDTO
+                    {
+                        WorkerId = assignment.WorkerId,
+                        TaskId = assignment.TaskId,
+                        AssignedHours = task.Duration,
+                        Status = "הוקצה",
+                        StartTime = startTime,
+                        FinishTime = finalSchedule.CalculateFinishTime(startTime, task.Duration, worker.WorkerId, workerAvailabilities, workerAbsences, existingSchedules)
+                    };
+                    manual_schedule.Add(scheduleEntry);
+                }
+            }
+
+            return manual_schedule;
+        }
+
 
         /// <summary>
         /// Consolidates task assignments by assigning each complete task to the worker who received the most hours for that task
@@ -71,7 +105,7 @@ namespace BLL
         /// <param name="assignments">Original Hungarian algorithm assignments (hour-by-hour)</param>
         /// <param name="expandedMatrix">The expanded matrix with mapping information</param>
         /// <returns>Dictionary mapping each task to its assigned worker</returns>
-        private   Dictionary<int, int> ConsolidateTaskAssignments(int[] assignments, ExpandedMatrixResult expandedMatrix)
+        private Dictionary<int, int> ConsolidateTaskAssignments(int[] assignments, ExpandedMatrixResult expandedMatrix)
         {
             // Dictionary to store how many hours each worker got for each task
             // Key: TaskId, Value: Dictionary<WorkerId, HoursAssigned>

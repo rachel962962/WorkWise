@@ -314,6 +314,21 @@ namespace DAL
                 throw new Exception("Error getting all worker availabilities", ex);
             }
         }
+
+        public async Task<int> GetWokerAbsenceCountByTeamAsync(int teamId)
+        {
+            await using var ctx = new WorkWiseDbContext();
+            try
+            {
+                return await ctx.WorkerAbsences
+                    .Where(wa => wa.Worker.TeamId == teamId && wa.StartDate <= DateTime.Today && wa.EndDate >= DateTime.Today)
+                    .CountAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting worker absence count by team", ex);
+            }
+        }
     }
 }
 

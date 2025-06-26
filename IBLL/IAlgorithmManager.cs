@@ -10,5 +10,6 @@ namespace IBLL
     public interface IAlgorithmManager
     {
         public Task<List<ScheduleDTO>> ManageAlgorithmAsync(List<TaskDTO> tasks, List<WorkerDTO> workers, DateTime end, List<ScheduleDTO> existingSchedules);
+        public Task<List<ScheduleDTO>> ManualAssignments(List<TaskAssignmentDto> assignments);
     }
 }

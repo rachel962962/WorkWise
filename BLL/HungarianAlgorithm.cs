@@ -56,7 +56,7 @@ namespace BLL
 
             // אתחול מטריצת מסיכות:
             // 0 = לא מסומן, 1 = אפס מסומן בכוכב (שיבוץ פוטנציאלי), 2 = אפס מסומן ב"פריים" (מועמד)
-             var masks = new byte[h, w];
+            var masks = new byte[h, w];
             var rowsCovered = new bool[h];
             var colsCovered = new bool[w];
 
@@ -68,7 +68,7 @@ namespace BLL
                 {
                     if (Math.Abs(costs[i, j]) < double.Epsilon && !rowsCovered[i] && !colsCovered[j])
                     {
-                        masks[i, j] = 1; 
+                        masks[i, j] = 1;
                         rowsCovered[i] = true; // כיסוי השורה
                         colsCovered[j] = true; // כיסוי העמודה
                     }
@@ -97,15 +97,15 @@ namespace BLL
                 };
             }
 
-            // Extract the final assignment from the masks matrix
+            // חילוץ ההקצאה הסופית ממטריצת המסכות
             var agentsTasks = new int[h];
 
             for (var i = 0; i < h; i++)
             {
-                agentsTasks[i] = -1; // Default to unassigned
+                agentsTasks[i] = -1; // ברירת מחדל למצב ללא הקצאה
                 for (var j = 0; j < w; j++)
                 {
-                    if (masks[i, j] == 1) // Found a starred zero (assignment)
+                    if (masks[i, j] == 1) // נמצא אפס מסומן בכוכבית (משימה)
                     {
                         agentsTasks[i] = j;
                         break;
@@ -113,7 +113,7 @@ namespace BLL
                 }
             }
 
-            // If we transposed the original matrix, we need to transpose the result back
+            // אם ביצענו טרנספוזיציה של המטריצה ​​המקורית, עלינו טרנספוזיציה של התוצאה חזרה
             if (rowsGreaterThanCols)
             {
                 var agentsTasksTranspose = new int[w];
@@ -135,11 +135,9 @@ namespace BLL
             return agentsTasks;
         }
 
-        /// <summary>
-        /// Step 1: Check if the current assignment is optimal by counting covered columns.
-        /// If all columns are covered (each with a starred zero), we have found an optimal solution.
-        /// </summary>
-        /// <returns>-1 if assignment is optimal, 2 if we need to proceed to next step</returns>
+        // שלב 1: בדוק אם ההקצאה הנוכחית אופטימלית על ידי ספירת עמודות מכוסות.
+        // אם כל העמודות מכוסות (כל אחת עם אפס מסומן בכוכבית), מצאנו פתרון אופטימלי.
+        // מחזירה -1 אם ההקצאה אופטימלית, 2 אם עלינו להמשיך לשלב הבא
         private static int CheckForOptimalAssignment(byte[,] masks, bool[] colsCovered, int w, int h)
         {
             if (masks == null)
@@ -148,17 +146,17 @@ namespace BLL
             if (colsCovered == null)
                 throw new ArgumentNullException(nameof(colsCovered));
 
-            // Cover all columns containing a starred zero
+            // כסו את כל העמודות המכילות אפס המסומן בכוכבית
             for (var i = 0; i < h; i++)
             {
                 for (var j = 0; j < w; j++)
                 {
-                    if (masks[i, j] == 1) // If cell contains a starred zero
-                        colsCovered[j] = true; // Cover this column
+                    if (masks[i, j] == 1) // אם התא מכיל אפס המסומן בכוכבית
+                        colsCovered[j] = true; // כסה עמודה זו
                 }
             }
 
-            // Count covered columns
+            // ספירת העמודות המכוסות
             var colsCoveredCount = 0;
             for (var j = 0; j < w; j++)
             {
@@ -166,20 +164,18 @@ namespace BLL
                     colsCoveredCount++;
             }
 
-            // If all columns are covered, we have an optimal assignment
+            // אם כל העמודות מכוסות, יש לנו הקצאה אופטימלית
             if (colsCoveredCount == Math.Min(w, h))
-                return -1; // Exit the algorithm - optimal solution found
+                return -1; // יציאה מהאלגוריתם - נמצא פתרון אופטימלי
 
-            // Otherwise, proceed to step 2
+            // אחרת, המשך לשלב 2
             return 2;
         }
 
-        /// <summary>
-        /// Step 2: Find an uncovered zero, prime it, and determine the next step.
-        /// If there's a starred zero in the same row, cover that row and uncover the column of the starred zero.
-        /// If there's no starred zero in the row, proceed to augment the path starting from this zero.
-        /// </summary>
-        /// <returns>3 if we found a primed zero with no starred zero in its row, 4 if no uncovered zeros remain</returns>
+        // שלב 2: מצא אפס לא מכוסה, קבע אותו כראשוני וקבע את השלב הבא.
+        // אם יש אפס מסומן בכוכבית באותה שורה, כסה את השורה הזו וחשוף את העמודה של האפס המסומן בכוכבית.
+        // אם אין אפס מסומן בכוכבית בשורה, המשך להרחבת הנתיב החל מאפס זה.
+        // החזר 3 אם מצאנו אפס מסומן מראש ללא אפס מסומן בכוכבית בשורה שלו, 4 אם לא נותרו אפסים לא מכוסים.
         private static int FindAndPrimeUncoveredZero(double[,] costs, byte[,] masks, bool[] rowsCovered, bool[] colsCovered, int w, int h, ref (int row, int column) pathStart)
         {
             if (costs == null)
@@ -196,37 +192,35 @@ namespace BLL
 
             while (true)
             {
-                // Find an uncovered zero
+                // מצא אפס לא מכוסה
                 var loc = FindUncoveredZero(costs, rowsCovered, colsCovered, w, h);
-                if (loc.row == -1) // If no uncovered zero exists
-                    return 4; // Proceed to step 4 - need to create new zeros
+                if (loc.row == -1) // אם לא קיים 0 לא מכוסה
+                    return 4; // המשך לשלב 4 - צריך ליצור אפסים חדשים
 
-                // Prime the found zero (mark as a candidate)
+                // סמן כמועמד
                 masks[loc.row, loc.column] = 2;
 
-                // Check if there's a starred zero in the same row
+                //בדוק אם יש אפס המסומן בכוכבית באותה שורה
                 var starCol = FindStarredZeroInRow(masks, w, loc.row);
                 if (starCol != -1)
                 {
-                    // Cover the row of this zero and uncover the column of the starred zero
-                    // This helps us find more uncovered zeros
+                    // כסו את השורה של האפס הזה וחשפו את העמודה של האפס המסומן בכוכבית
+                    // זה עוזר לנו למצוא עוד אפסים חשופים
                     rowsCovered[loc.row] = true;
                     colsCovered[starCol] = false;
                 }
                 else
                 {
-                    // No starred zero in this row means we can build an augmenting path
+                    // אין אפס מסומן בכוכבית בשורה זו פירושו שנוכל לבנות נתיב הרחבה
                     pathStart = loc;
-                    return 3; // Proceed to step 3 - augment path
+                    return 3; // המשך לשלב 3 - הרחבת נתיב
                 }
             }
         }
 
-        /// <summary>
-        /// Step 3: Construct and augment a path of alternating starred and primed zeros.
-        /// This increases the number of starred zeros by one, bringing us closer to the optimal solution.
-        /// </summary>
-        /// <returns>1 to return to step 1 after augmenting the path</returns>
+        // שלב 3: בנה והרחב נתיב של אפסים מסומנים בכוכבית ואפסים ראשוניים לסירוגין.
+        // פעולה זו מגדילה את מספר האפסים המסומנים בכוכבית באחד, ומקרבת אותנו לפתרון האופטימלי.
+        // החזר 1 כדי לחזור לשלב 1 לאחר הרחבת הנתיב
         private static int AugmentPathOfZeros(byte[,] masks, bool[] rowsCovered, bool[] colsCovered, int w, int h, (int row, int column)[] path, (int row, int column) pathStart)
         {
             if (masks == null)
@@ -238,46 +232,44 @@ namespace BLL
             if (colsCovered == null)
                 throw new ArgumentNullException(nameof(colsCovered));
 
-            // Construct the augmenting path
+            // בנה את נתיב ההרחבה
             var pathIndex = 0;
             path[0] = pathStart;
 
             while (true)
             {
-                // Find a starred zero in the same column as the last zero in the path
+                // מצא אפס המסומן בכוכבית באותה עמודה כמו האפס האחרון בנתיב
                 var row = FindStarredZeroInColumn(masks, h, path[pathIndex].column);
-                if (row == -1) // If no starred zero in this column
-                    break; // Path construction is complete
+                if (row == -1) // אם אין אפס מסומן בכוכבית בעמודה זו
+                    break; // בניית הנתיב הסתיימה
 
-                // Add the starred zero to the path
+                // הוסף את האפס המסומן בכוכבית לנתיב
                 pathIndex++;
                 path[pathIndex] = (row, path[pathIndex - 1].column);
 
-                // Find a primed zero in the same row as the starred zero we just added
+                // מצא אפס מסומן בכוכבית באותה שורה כמו האפס המסומן בכוכבית שהוספנו עכשיו
                 var col = FindPrimedZeroInRow(masks, w, path[pathIndex].row);
 
-                // Add the primed zero to the path
+                // הוסף את האפס הראשוני לנתיב
                 pathIndex++;
                 path[pathIndex] = (path[pathIndex - 1].row, col);
             }
 
-            // Augment the path: convert stars to non-stars and primes to stars
+            // הרחבת הנתיב: הפוך את האפסים המסומנים בכוכבית לאפסים לא מסומנים, ואת האפסים הראשוניים לאפסים מסומנים בכוכבית
             AugmentPath(masks, path, pathIndex + 1);
 
-            // Clear all covers and primes to prepare for the next iteration
+            // נקו את כל הכיסויים והפריימים כדי להתכונן לאיטרציה הבאה
             ClearAllCovers(rowsCovered, colsCovered, w, h);
             ClearAllPrimes(masks, w, h);
 
-            // Return to step 1
+            // חזרה לשלב 1
             return 1;
         }
 
-        /// <summary>
-        /// Step 4: Create new zeros by adjusting the cost matrix.
-        /// We add the minimum uncovered value to all covered rows and subtract it from all uncovered columns.
-        /// This creates at least one new uncovered zero without disturbing the existing starred zeros.
-        /// </summary>
-        /// <returns>2 to return to step 2 after creating new zeros</returns>
+        // שלב 4: צור אפסים חדשים על ידי התאמת מטריצת העלות.
+        // אנו מוסיפים את הערך המינימלי הלא מכוסה לכל השורות המכוסות ומחסירים אותו מכל העמודות הלא מכוסות.
+        // פעולה זו יוצרת לפחות אפס חדש אחד ללא הפרעה לאפסים המסומנים בכוכבית.
+        // החזר 2 כדי לחזור לשלב 2 לאחר יצירת אפסים חדשים
         private static int CreateNewZerosByCostAdjustment(double[,] costs, bool[] rowsCovered, bool[] colsCovered, int w, int h)
         {
             if (costs == null)
@@ -289,13 +281,13 @@ namespace BLL
             if (colsCovered == null)
                 throw new ArgumentNullException(nameof(colsCovered));
 
-            // Find the minimum uncovered value in the cost matrix
+            // מצא את הערך המינימלי הלא מכוסה במטריצת העלות
             var minValue = FindMinimumUncoveredValue(costs, rowsCovered, colsCovered, w, h);
 
-            // Update the cost matrix:
-            // - Add minValue to every covered row
-            // - Subtract minValue from every uncovered column
-            // This creates at least one new uncovered zero
+            // עדכון מטריצת העלויות:
+            // - הוסף את minValue לכל שורה מכוסה
+            // - חיסור minValue מכל עמודה לא מכוסה
+            // פעולה זו יוצרת לפחות אפס חדש אחד לא מכוסה
             for (var i = 0; i < h; i++)
             {
                 for (var j = 0; j < w; j++)
@@ -307,13 +299,11 @@ namespace BLL
                 }
             }
 
-            // Return to step 2 to find the new uncovered zero
+            // חזור לשלב 2 כדי למצוא את האפס החדש שלא נחשף
             return 2;
         }
 
-        /// <summary>
-        /// Finds the minimum value in the uncovered cells of the cost matrix.
-        /// </summary>
+        // מוצא את הערך המינימלי בתאים הלא מכוסים של מטריצת העלות.
         private static double FindMinimumUncoveredValue(double[,] costs, bool[] rowsCovered, bool[] colsCovered, int w, int h)
         {
             if (costs == null)
@@ -471,9 +461,8 @@ namespace BLL
             }
         }
 
-        /// <summary>
-        /// Uncovers all rows and columns.
-        /// </summary>
+
+        // Uncovers all rows and columns.
         private static void ClearAllCovers(bool[] rowsCovered, bool[] colsCovered, int w, int h)
         {
             if (rowsCovered == null)

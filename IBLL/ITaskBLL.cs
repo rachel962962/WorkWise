@@ -18,5 +18,6 @@ namespace IBLL
         Task<List<TaskDTO>> GetAllInProgressTasksAsync();
         Task<List<TaskDTO>> GetAllCancelledTasksAsync();
         Task<List<TaskDependencyDTO>> GetAllDependenciesByTasksIdsAsync(List<int>tasksIds);
+        Task UpdateTaskAsync(TaskDTO task);
     }
 }

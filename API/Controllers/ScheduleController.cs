@@ -28,10 +28,48 @@ namespace API.Controllers
         }
 
         // POST api/<ScheduleController>
-        [HttpPost]
-        public void Post([FromBody] string value)
+        [HttpPost("manual-assignments")]
+        public async Task<ActionResult> Post([FromBody] List<TaskAssignmentDto> assignments)
         {
+            if (assignments == null || !assignments.Any())
+            {
+                return BadRequest("Assignments cannot be null or empty.");
+            }
+            try
+            {
+                var schedules = await scheduleBLL.ManualAssignments(assignments);
+                return Ok(new
+                {
+                    message = "Assignments successfully processed.",
+                    count = schedules.Count,
+                    schedules
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
+
+        public class StatusUpdateModel
+        {
+            public string Status { get; set; }
+        }
+
+        [HttpPut("{scheduleId}/status")]
+        public async Task<ActionResult> UpdateScheduleStatus(int scheduleId, [FromBody] StatusUpdateModel model)
+        {
+            try
+            {
+                await scheduleBLL.UpdateScheduleStatusAsync(scheduleId, model.Status );
+                return Ok("Schedule status updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
 
         // PUT api/<ScheduleController>/5
         [HttpPut("{id}")]
@@ -77,6 +115,41 @@ namespace API.Controllers
                 return NotFound($"Schedule for {date} and team {teamId} was not found.");
             }
             return Ok(schedule);
+        }
+
+        [HttpGet("get-assignments-count-for-today-by-team/{teamId}")]
+        public async Task<ActionResult<int>> GetAssignmentsCountByDateAndTeam( int teamId)
+        {
+            if (teamId == 0)
+            {
+                return BadRequest("Team ID cannot be zero.");
+            }
+            var count = await scheduleBLL.GetAssignScheduleForTodayByTeamAsync(teamId);
+            return Ok(count);
+        }
+
+        [HttpGet("get-all-ongoing-schedules-by-team{teamId}")]
+        public async Task<ActionResult<IEnumerable<ScheduleDTO>>> GetAllOngoingSchedulesByTeamAndDate(int teamId)
+        {
+            if (teamId == 0)
+            {
+                return BadRequest("Team ID cannot be zero.");
+            }
+            var count = await scheduleBLL.GetAllOngoingSchedulesCountByTeamAndDateAsync(teamId);
+            return Ok(count);
+        }
+
+        //מספר משימות שבוטלו היום לפי צוות
+
+        [HttpGet("get-cancelled-tasks-count-for-today-by-team/{teamId}")]
+        public async Task<ActionResult<int>> GetCancelledTasksCountForTodayByTeam(int teamId)
+        {
+            if (teamId == 0)
+            {
+                return BadRequest("Team ID cannot be zero.");
+            }
+            var count = await scheduleBLL.GetCancelledTasksCountForTodayByTeamAsync(teamId);
+            return Ok(count);
         }
     }
 }

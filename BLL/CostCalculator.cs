@@ -24,9 +24,7 @@ namespace BLL
             IWorkerSkillBLL = workerSkillBLL;
         }
 
-        /// <summary>
-        /// Calculates the cost matrix for task-worker assignments
-        /// </summary>
+        // חישוב מטריצת העלויות עבור הקצאות עובד-משימה
         public static async Task<CostMatrixResult> CalculateCostMatrixAsync(List<WorkerDTO> workers, List<TaskDTO> tasks, DateTime end)
         {
             if (workers.Count == 0)
@@ -94,14 +92,14 @@ namespace BLL
                 }
             }
 
-            // *** השינוי העיקרי: מטריצה עם עובדים בשורות ומשימות בעמודות ***
+            //  מטריצה עם עובדים בשורות ומשימות בעמודות 
             double[,] costMatrix = new double[workers.Count, tasks.Count];
 
             var normalizationFactors = await CalculateNormalizationFactorsAsync(tempCostMatrix);
 
             Factors factors = CalculateFactors(tempCostMatrix);
 
-            // *** שינוי סדר הלולאות: עובדים קודם, משימות שנית ***
+            //  שינוי סדר הלולאות: עובדים קודם, משימות שנית
             for (int w = 0; w < workers.Count; w++)
             {
                 for (int t = 0; t < tasks.Count; t++)
@@ -664,7 +662,7 @@ namespace BLL
         }
 
 
-     
+
         private static async Task<NormalizationFactors> CalculateNormalizationFactorsAsync(double[,,] mat)
         {
             double maxDeadline = await GetMax(mat, 0);

@@ -256,5 +256,10 @@ namespace BLL
             var list = await workerDAL.GetAllWokerAbsenceAsync();
             return mapper.Map<List<WorkerAbsenceDTO>>(list);
         }
+
+        public async Task<int> GetWokerAbsenceCountByTeamAsync(int teamId)
+        {
+            return await workerDAL.GetWokerAbsenceCountByTeamAsync(teamId);
+        }
     }
 }

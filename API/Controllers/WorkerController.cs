@@ -36,7 +36,8 @@ namespace API.Controllers
         [HttpGet("workers-by-team/{teamId}")]
         public async Task<ActionResult<IEnumerable<WorkerDTO>>> GetWorkersByTeam(int teamId)
         {
-            if (teamId == 0 ) {
+            if (teamId == 0)
+            {
                 return BadRequest("Team ID cannot be zero.");
             }
             var team = await teamBLL.GetTeamByIdAsync(teamId);
@@ -122,6 +123,22 @@ namespace API.Controllers
             }
             await workerBLL.DeleteWorkerAsync(id);
             return Ok($"Worker with id {id} was deleted.");
+        }
+
+        [HttpGet("today-worker-absence-count-by-team/{teamId}")]
+        public async Task<ActionResult<int>> GetTodayWorkerAbsenceCountByTeam(int teamId)
+        {
+            if (teamId == 0)
+            {
+                return BadRequest("Team ID cannot be zero.");
+            }
+            var team = await teamBLL.GetTeamByIdAsync(teamId);
+            if (team == null)
+            {
+                return NotFound($"Team with id {teamId} was not found.");
+            }
+            var count = await workerBLL.GetWokerAbsenceCountByTeamAsync(teamId);
+            return Ok(count);
         }
     }
 }
